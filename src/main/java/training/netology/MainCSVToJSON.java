@@ -1,7 +1,6 @@
 package training.netology;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import com.opencsv.CSVReader;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
@@ -12,6 +11,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import java.util.List;
 public class MainCSVToJSON {
     private static FileWriter file;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
 
         String[] columnMapping = {"id", "firstName", "lastName", "country", "age"};
@@ -33,7 +33,6 @@ public class MainCSVToJSON {
         } finally {
 
         }
-
 
 
         try {
@@ -48,7 +47,50 @@ public class MainCSVToJSON {
             e.printStackTrace();
         }
 
+//--------------------------------------------------------
+        ////3 - jsonToClass
+        String json = readString("data.json");
+        List<Employee> list = jsonToList(json);
+        list.forEach(x -> System.out.println(x));
 
+    }
+
+    private static String readString(String s) throws IOException {
+        String json = "";
+        try (BufferedReader reader = new BufferedReader(new FileReader(s))) {
+            String line = null;
+            StringBuilder stringBuilder = new StringBuilder();
+            String ls = System.getProperty("line.separator");
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+                stringBuilder.append(ls);
+            }
+
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            json = stringBuilder.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (json.equals("")) {
+            throw new IOException("String is empty! File empty or not read!");
+        }
+
+        return json;
+    }
+
+    private static List<Employee> jsonToList(String json) throws JsonIOException {
+        List<Employee> list = new ArrayList<>();
+
+        Gson g = new Gson();
+        JsonParser jsonParser = new JsonParser();
+        JsonArray jsonArray = (JsonArray) jsonParser.parse(json);
+        for (JsonElement j : jsonArray
+        ) {
+            list.add(g.fromJson(j, Employee.class));
+        }
+
+
+        return list;
     }
 
     public static List<Employee> parseCSV(String[] columns, String filename) {
@@ -98,15 +140,20 @@ public class MainCSVToJSON {
                     if (employeersDetails.getNodeType() != Node.TEXT_NODE) {
                         switch (employeersDetails.getNodeName()) {
                             case "id":
-                                id = Integer.parseInt(employeersDetails.getChildNodes().item(0).getTextContent()); break;
+                                id = Integer.parseInt(employeersDetails.getChildNodes().item(0).getTextContent());
+                                break;
                             case "firstName":
-                                firstName = employeersDetails.getChildNodes().item(0).getTextContent();break;
+                                firstName = employeersDetails.getChildNodes().item(0).getTextContent();
+                                break;
                             case "lastName":
-                                lastName = employeersDetails.getChildNodes().item(0).getTextContent();break;
+                                lastName = employeersDetails.getChildNodes().item(0).getTextContent();
+                                break;
                             case "country":
-                                country = employeersDetails.getChildNodes().item(0).getTextContent();break;
+                                country = employeersDetails.getChildNodes().item(0).getTextContent();
+                                break;
                             case "age":
-                                age = Integer.parseInt(employeersDetails.getChildNodes().item(0).getTextContent());break;
+                                age = Integer.parseInt(employeersDetails.getChildNodes().item(0).getTextContent());
+                                break;
                         }
                     }
                 }
